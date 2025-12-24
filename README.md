@@ -100,9 +100,3 @@ java -jar target/*.jar
   - Thymeleaf 配置等
 
 > 如果你使用了数据库（MySQL/H2 等），建议在 README 中补充：建表 SQL、初始化数据、以及如何配置连接信息。
-
----
-
-## License
-
-如果你还没选许可证，可以考虑添加 MIT / Apache-2.0 等，并在此处注明。
