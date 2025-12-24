@@ -1,102 +1,107 @@
-# onlineQandASpring
+# 在线问答平台（Spring Boot + Thymeleaf）
 
-一个基于 **Spring Boot + Thymeleaf** 的在线问答（Q&A）Web 项目示例。  
-后端使用 **Java 17** 与 **Spring Boot 3.5.9**，构建工具为 **Maven**，前端页面采用 **Thymeleaf 模板**渲染。
+一个基于 Spring Boot 的在线问答示例项目，包含注册、登录、验证码二次验证、话题发布与详情查看、登录拦截等功能。
 
----
+## 功能特性
+- 用户注册与登录
+- 登录二次验证（图片验证码）
+- 话题列表、详情与发布
+- 登录拦截器：未登录访问业务页面将被重定向到登录页
+- Thymeleaf 模板渲染，简单的表单校验
 
 ## 技术栈
+- Java 17
+- Spring Boot 3（Web、Thymeleaf）
+- Lombok（如使用）
+- 构建工具：Maven
 
-- Java：17
-- Spring Boot：3.5.9
-- Web：Spring Boot Starter Web
-- 模板引擎：Spring Boot Starter Thymeleaf
-- Lombok：用于简化实体/DTO 等样板代码
-- 测试：Spring Boot Starter Test
-- 构建工具：Maven（支持 `mvnw`/`mvnw.cmd`）
+## 项目结构
+```
+src/
+ ├─ main/
+ │   ├─ java/com/boda/onlineqandaspring/
+ │   │   ├─ OnlineQandASpringApplication.java
+ │   │   ├─ config/
+ │   │   │   └─ WebConfig.java                # 首页重定向、静态资源、拦截器
+ │   │   ├─ interceptor/
+ │   │   │   └─ LoginInterceptor.java         # 登录拦截（检查 session）
+ │   │   ├─ controller/
+ │   │   │   ├─ UserController.java           # 注册/登录/登出
+ │   │   │   ├─ CaptchaController.java        # 验证码图片与校验
+ │   │   │   ├─ TopicController.java          # 话题列表/详情/发布
+ │   │   │   └─ DiscussController.java        #（若启用）评论
+ │   │   ├─ service/
+ │   │   │   ├─ CaptchaService.java           # 使用 bg.jpg 绘制验证码
+ │   │   │   ├─ UserService.java
+ │   │   │   └─ MessageService.java
+ │   │   ├─ model/                            # User、Message
+ │   │   └─ repository/                       # UserRepository、MessageRepository
+ │   └─ resources/
+ │       ├─ application.properties
+ │       ├─ static/
+ │       │   └─ bg.jpg                        # 验证码背景图
+ │       └─ templates/                        # Thymeleaf 视图
+ │           ├─ login.html
+ │           ├─ register.html
+ │           ├─ captcha.html
+ │           ├─ online.html
+ │           └─ topicDetail.html
+```
 
----
-
-## 项目结构（已确认）
-
-仓库根目录下有一个真正的 Spring Boot 工程目录：`onlineQandASpring/`
-
-常见结构如下（你的仓库中已存在对应目录）：
-
-- `onlineQandASpring/pom.xml`：Maven 依赖与构建配置
-- `onlineQandASpring/src/main/java/`：后端 Java 代码（Controller / Service / Repository / Entity 等）
-- `onlineQandASpring/src/main/resources/`：配置与模板资源（如 `application.yml`、`templates/`、`static/`）
-- `onlineQandASpring/src/test/`：测试代码
-- `onlineQandASpring/target/`：构建产物（建议从 Git 版本管理中忽略）
-- `onlineQandASpring/mvnw`、`onlineQandASpring/mvnw.cmd`：Maven Wrapper
-- `onlineQandASpring/HELP.md`：Spring Initializr/Boot 生成的帮助说明
-
----
-
-## 环境要求
-
-- JDK 17（必须）
-- （可选）Maven 3.x（如果你使用 `mvnw` 则不必单独安装）
-
----
-
-## 快速开始
-
-### 1) 克隆仓库
-
+## 本地运行
+1. 安装 Java 17 与 Maven。
+2. 在项目根目录运行：
 ```bash
-git clone https://github.com/Eathelyn-c/onlineQandASpring.git
-cd onlineQandASpring/onlineQandASpring
+mvn spring-boot:run
 ```
+3. 访问：
+- 登录页：http://localhost:8080/user/login
+- 根路径 `/` 已在 `WebConfig` 重定向到 `/user/login`。
 
-### 2) 本地运行（推荐使用 Maven Wrapper）
+## 登录 + 验证码流程
+1. 在 `/user/login` 提交用户名与密码（POST `/user/login`）。
+2. 用户不存在或密码错误 → 留在登录页并显示错误消息。
+3. 密码正确 → 跳转验证码页 `captcha.html`。
+4. 验证码图片由接口 `GET /captcha/image` 动态生成，`CaptchaService` 使用 `classpath:static/bg.jpg` 作为背景，验证码字符串存放在 Session 的 `CaptchaNum`。
+5. 提交验证码（POST `/captcha/check`）：
+   - 正确 → 将 `userID` 与 `loginUsername` 写入 Session，重定向到 `/topic/list`。
+   - 错误 → 留在验证码页并提示错误，可刷新图片后重试。
 
-macOS / Linux：
+## 主要路由
+- 用户
+  - `GET /user/login`：登录页
+  - `POST /user/login`：提交登录（密码正确进入验证码）
+  - `GET /user/register`：注册页
+  - `POST /user/register`：提交注册
+  - `GET /user/logout`：退出登录（清空 Session）
+- 验证码
+  - `GET /captcha/image`：验证码图片（PNG）
+  - `POST /captcha/check`：验证码校验并登录
+- 话题
+  - `GET /topic/list`：话题列表（需登录）
+  - `POST /topic/create`：发布话题（需登录）
+  - `GET /topic/{topicId}`：话题详情（需登录）
 
+## 拦截器与白名单
+- 拦截器：`LoginInterceptor` 在 `WebConfig#addInterceptors` 中注册。
+- 白名单（无需登录可访问）：
+  - `/user/login`, `/user/register`, `/user/logout`
+  - `/captcha/**`
+  - `/static/**`, `/images/**`, `/Images/**`
+  - `/error`
+- 其他路径若 Session 无 `userID` → 重定向到 `/user/login`。
+
+## 模板与静态资源
+- 模板（`src/main/resources/templates/`）不能通过 URL 直接访问，例如 `templates/login.html`；需通过控制器返回视图名 `return "login";`，浏览器访问 `/user/login`。
+- 静态资源位于 `src/main/resources/static/`，验证码图片非静态文件，由 `/captcha/image` 动态生成。
+- 验证码背景图加载：`CaptchaService` 使用 `ResourceLoader` 读取 `classpath:static/bg.jpg`，适用于开发与打包运行环境。
+
+## 构建与打包
+- 打包可执行 JAR：
 ```bash
-./mvnw spring-boot:run
+mvn -DskipTests package
 ```
-
-Windows：
-
-```bat
-mvnw.cmd spring-boot:run
-```
-
-启动成功后，默认访问：
-
-- http://localhost:8080
-
-> 如果你在 `application.properties/yml` 里修改了端口，请以你配置的端口为准。
-
-### 3) 打包运行
-
+- 运行 JAR：
 ```bash
-./mvnw clean package
-java -jar target/*.jar
+java -jar target/onlineQandASpring-0.0.1-SNAPSHOT.jar
 ```
-
----
-
-## 功能说明（待你根据代码补充）
-
-你可以把下面这些点按实际代码情况补全/删减：
-
-- 用户模块：注册 / 登录 / 退出
-- 问题模块：发布问题 / 问题列表 / 问题详情 / 搜索
-- 回答模块：回答问题 / 删除回答 / 点赞等
-- 评论/标签/分类（如有）
-- 权限与校验（如有）
-
----
-
-## 配置说明（建议补充）
-
-通常在 `src/main/resources/` 中配置：
-
-- `application.yml` 或 `application.properties`
-  - 端口 `server.port`
-  - 数据库连接（如果你使用了数据库）
-  - Thymeleaf 配置等
-
-> 如果你使用了数据库（MySQL/H2 等），建议在 README 中补充：建表 SQL、初始化数据、以及如何配置连接信息。
