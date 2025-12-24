@@ -103,13 +103,6 @@ java -jar target/*.jar
 
 ---
 
-## 常见问题
-
-- **为什么仓库里有 `target/`？**  
-  `target/` 是 Maven 编译输出目录，一般不建议提交到 Git。推荐添加 `.gitignore` 将其忽略。
-
----
-
 ## License
 
 如果你还没选许可证，可以考虑添加 MIT / Apache-2.0 等，并在此处注明。
