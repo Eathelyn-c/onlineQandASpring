@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>话题内容</title>
+</head>
+<body>
+<h1>话题详情</h1>
+<a th:href="@{/topic/list}">返回话题列表</a>
+
+<div th:if="${topic == null}">
+    <p>话题不存在或已被删除</p>
+</div>
+
+<div th:if="${topic != null}">
+    <!-- 显示话题内容 -->
+    <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px;">
+        <h2 th:text="${topic.title}"></h2>
+        <div>
+            <strong>发布者:</strong><span th:text="${topic.sender}"></span>
+            <strong>时间:</strong><span th:text="${topic.dateTime}"></span>
+        </div>
+        <div style="margin-top: 10px;">
+            <strong>内容:</strong><br>
+            <span style="white-space: pre-wrap" th:text="${topic.content}"></span>
+        </div>
+    </div>
+</div>
+
+<h2>评论区</h2>
+
+<div th:if="${messagesReply == null or #lists.isEmpty(messagesReply)}">
+    <p>暂无回复,快来第一个回复吧!</p>
+</div>
+
+<div th:if="${messagesReply != null and not #lists.isEmpty(messagesReply)}">
+    <div th:each="message : ${messagesReply}"
+         style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px;">
+        <div>
+            <strong>评论者:</strong><span th:text="${message.sender}"></span>
+            <strong>时间:</strong><span th:text="${message.dateTime}"></span>
+        </div>
+        <div style="margin-top: 10px;">
+            <strong>内容:</strong><br>
+            <span style="white-space: pre-wrap" th:text="${message.content}"></span>
+        </div>
+    </div>
+</div>
+
+<h2>发表回复</h2>
+<form th:action="@{/discuss/create}" method="post">
+    <input type="hidden" name="topicId" th:value="${topic.topicID}">
+    标题:<input type="text" name="title" placeholder="回复标题(可选)"><br>
+    内容:<br>
+    <textarea name="content" rows="5" cols="50" required></textarea><br>
+    <input type="submit" value="发送">
+</form>
+</body>
+</html>

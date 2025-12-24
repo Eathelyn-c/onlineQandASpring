@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线问答平台</title>
+</head>
+<body>
+<h1>欢迎来到在线问答平台</h1>
+用户:<span th:text="${loginUsername}"></span><br>
+用户id:<span th:text="${userID}"></span><br>
+<a th:href="@{/user/logout}">退出登录</a>
+<h3>讨论话题:</h3>
+<div class="topics">
+    <!-- 已经发布的话题 -->
+    <p th:if="${messagesRelease == null or #lists.isEmpty(messagesRelease)}">还没有话题发布!</p>
+
+    <!-- 跳转到对应的线程 -->
+    <p th:each="m : ${messagesRelease}">
+        <a th:href="@{/topic/{topicId}(topicId=${m.topicID})}">
+            话题:<span th:text="${m.title}"></span>
+        </a>
+        - by <span th:text="${m.sender}"></span> at <span th:text="${m.dateTime}"></span>
+    </p>
+</div>
+<h3>发布话题:</h3>
+<form th:action="@{/topic/create}" method="post">
+    标题:<input type="text" name="topic" required><br>
+    内容:<br>
+    <textarea name="content" rows="5" cols="40" required></textarea><br>
+    <input type="submit" value="发布">
+</form>
+</body>
+</html>

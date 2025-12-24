@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录验证</title>
+</head>
+<body>
+<h3>请输入图片中的数字完成验证</h3>
+<!-- 生成图片验证码 -->
+<img th:src="@{/captcha/image}" id="img" onclick="refresh()">
+
+<form th:action="@{/captcha/check}" method="post">
+    输入图片中的数字:<input name="code">
+    <input type="hidden" name="username" th:value="${username}">
+    <input type="submit" value="验证">
+</form>
+<p><a th:href="@{/user/login}">返回登录</a></p>
+
+<script>
+    function refresh() {
+        // 点击刷新验证码
+        document.getElementById("img").src = "/captcha/image?ts=" + new Date().getTime();
+    }
+</script>
+<p th:text="${msg}"></p>
+</body>
+</html>
